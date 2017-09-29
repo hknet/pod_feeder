@@ -12,6 +12,7 @@
 ## I owe a great debt to the code of diaspora-rss-bot (https://github.com/spkdev/diaspora-rss-bot)
 ## for helping me understand how play nice with CSRF tokens et al
 ##
+## updated for minor sqlite create database fix by hk@kapper.net
 
 use strict;
 use warnings;
@@ -629,8 +630,8 @@ sub post_message {
 sub init_database {
         my ( $db_file ) = @_;
 
-        my $dbh = connect_to_db( $db_file );
         unless( -e $db_file ){
+                my $dbh = connect_to_db( $db_file );
                 my $sth = $dbh->prepare(
                         'CREATE TABLE feeds(guid VARCHAR(255) PRIMARY KEY,feed_id VARCHAR(127),title VARCHAR(255),link VARCHAR(255),image VARCHAR(255),image_title VARCHAR(255),hashtags VARCHAR(255),timestamp INTEGER(10),posted INTEGER(1),body VARCHAR(10000))'
                 ) or die "Can't prepare statement: $DBI::errstr";
@@ -639,6 +640,7 @@ sub init_database {
                 $dbh->disconnect();
         }
         else {
+                my $dbh = connect_to_db( $db_file );
                 my $sth = $dbh->column_info(undef, undef, 'feeds', undef);
                 my $body_exists = 0;
                 while( my( $tcat, $tscheme, $tname, $column_name ) = $sth->fetchrow_array() ) {
